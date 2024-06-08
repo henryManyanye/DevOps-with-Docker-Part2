@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  front-end:
+    image: node
+    environment:
+      - REACT_APP_BACKEND_URL=http://back-end:8080
+    command: serve -s -l 5000 build
+
+  back-end:
+      image: go
+      environment:
+        - REQUEST_ORIGIN=http://localhost
+        - REDIS_HOST=redis-container
+        - POSTGRES_HOST=db
+        - POSTGRES_PASSWORD=example
+      ports:
+        - 8080:8080
+      command: ./server
+
+  redis-container:
+    image: redis
+
+
+  db:
+    image: postgres
+    restart: unless-stopped
+    shm_size: 128mb
+    environment:
+      POSTGRES_PASSWORD: example
+    volumes:
+      - ./database:/var/lib/postgresql/data
+
+  adminer:
+    image: adminer
+    restart: always
+
+
+  nginX:
+    image: nginx
+    volumes:
+    - ./nginx.conf:/etc/nginx/nginx.conf
+    environment:
+    - NGINX_PORT=80
+    ports:
+    - 80:80
+
+
